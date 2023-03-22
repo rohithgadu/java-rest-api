@@ -1,14 +1,19 @@
 package com.example.javarestapiexample.api;
 
 
-import com.example.javarestapiexample.error.ErrorDetails;
+import com.example.javarestapiexample.error.ApiError;
 import com.example.javarestapiexample.error.ServerObjectNotFoundException;
+import com.example.javarestapiexample.error.ValidationException;
 import com.example.javarestapiexample.model.ServerObject;
 import com.example.javarestapiexample.service.ServerObjectService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,7 +41,11 @@ public class ServerApi {
     }
 
     @PutMapping("/addServer")
-    ResponseEntity<?> addServerObject(@RequestBody ServerObject serverObject) {
+    ResponseEntity<?> addServerObject(@RequestBody @Valid ServerObject serverObject, BindingResult result) throws ValidationException {
+        if (result.hasErrors()) {
+            FieldError fieldError = result.getFieldErrors().get(0);
+            throw new ValidationException(fieldError.getDefaultMessage(), HttpStatus.BAD_REQUEST.value());
+        }
         ServerObject serverObjectResponse;
         serverObjectResponse = serverObjectService.addServerObject(serverObject);
         return new ResponseEntity<>(serverObjectResponse, HttpStatus.CREATED);
@@ -55,10 +64,23 @@ public class ServerApi {
         return new ResponseEntity<>(serverObjectResponseList, HttpStatus.OK);
     }
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<?> handleInvalidFields(ValidationException ex) {
+        ApiError apiError = new ApiError(ex.getCode(), ex.getMessage());
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleMessageNotReadableException(HttpMessageNotReadableException ex) {
+        ApiError apiError = new ApiError(400, ex.getMessage());
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(ServerObjectNotFoundException.class)
     public ResponseEntity<?> handleServerObjectNotFoundException(ServerObjectNotFoundException ex) {
-        ErrorDetails errorDetails = new ErrorDetails(ex.getCode(), ex.getMessage());
-        return new ResponseEntity<>(errorDetails, HttpStatusCode.valueOf(ex.getCode()));
+        ApiError apiError = new ApiError(ex.getCode(), ex.getMessage());
+        return new ResponseEntity<>(apiError, HttpStatusCode.valueOf(ex.getCode()));
     }
+
 
 }
