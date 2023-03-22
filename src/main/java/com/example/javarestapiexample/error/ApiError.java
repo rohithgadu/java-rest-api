@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class ErrorDetails {
+public class ApiError {
     private int statusCode;
     private String errorMessage;
 
