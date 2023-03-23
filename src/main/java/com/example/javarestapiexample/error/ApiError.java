@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class ApiError {
-    private int statusCode;
     private String errorMessage;
 
 }

@@ -4,6 +4,7 @@ package com.example.javarestapiexample.api;
 import com.example.javarestapiexample.error.ApiError;
 import com.example.javarestapiexample.error.ServerObjectNotFoundException;
 import com.example.javarestapiexample.error.ValidationException;
+import com.example.javarestapiexample.model.ApiResponse;
 import com.example.javarestapiexample.model.ServerObject;
 import com.example.javarestapiexample.service.ServerObjectService;
 import jakarta.validation.Valid;
@@ -30,14 +31,16 @@ public class ServerApi {
     ResponseEntity<?> getAllServerObjects() {
         List<ServerObject> serverObjectResponseList;
         serverObjectResponseList = serverObjectService.findAllServerObjects();
-        return new ResponseEntity<>(serverObjectResponseList, HttpStatus.OK);
+        ApiResponse<List<ServerObject>> response = new ApiResponse<>(true,200,serverObjectResponseList);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/getServer/byId/{id}")
     ResponseEntity<?> getServerObjectById(@PathVariable Long id) throws ServerObjectNotFoundException {
         Optional<ServerObject> serverObjectResponse;
         serverObjectResponse = serverObjectService.findServerObjectById(id);
-        return new ResponseEntity<>(serverObjectResponse, HttpStatus.OK);
+        ApiResponse<Optional<ServerObject>> response = new ApiResponse<>(true,200,serverObjectResponse);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/addServer")
@@ -48,12 +51,14 @@ public class ServerApi {
         }
         ServerObject serverObjectResponse;
         serverObjectResponse = serverObjectService.addServerObject(serverObject);
-        return new ResponseEntity<>(serverObjectResponse, HttpStatus.CREATED);
+        ApiResponse<ServerObject> response = new ApiResponse<>(true,201,serverObjectResponse);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/deleteServer/{id}")
     ResponseEntity<?> deleteServerObject(@PathVariable Long id) throws ServerObjectNotFoundException {
-        String response = serverObjectService.deleteServerObject(id);
+        String res = serverObjectService.deleteServerObject(id);
+        ApiResponse<String> response = new ApiResponse<>(true,200,res);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -61,25 +66,29 @@ public class ServerApi {
     ResponseEntity<?> getServerObjectByName(@PathVariable String name) throws ServerObjectNotFoundException {
         List<ServerObject> serverObjectResponseList;
         serverObjectResponseList = serverObjectService.findAllServerObjectsByName(name);
-        return new ResponseEntity<>(serverObjectResponseList, HttpStatus.OK);
+        ApiResponse<List<ServerObject>> response = new ApiResponse<>(true,200,serverObjectResponseList);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<?> handleInvalidFields(ValidationException ex) {
-        ApiError apiError = new ApiError(ex.getCode(), ex.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+        ApiError error = new ApiError(ex.getMessage());
+        ApiResponse<ApiError> response = new ApiResponse<>(false,400,error);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> handleMessageNotReadableException(HttpMessageNotReadableException ex) {
-        ApiError apiError = new ApiError(400, ex.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+        ApiError error = new ApiError(ex.getMessage());
+        ApiResponse<ApiError> response = new ApiResponse<>(false,400,error);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ServerObjectNotFoundException.class)
     public ResponseEntity<?> handleServerObjectNotFoundException(ServerObjectNotFoundException ex) {
-        ApiError apiError = new ApiError(ex.getCode(), ex.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatusCode.valueOf(ex.getCode()));
+        ApiError error = new ApiError(ex.getMessage());
+        ApiResponse<ApiError> response = new ApiResponse<>(false,ex.getCode(),error);
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(ex.getCode()));
     }
 
 
