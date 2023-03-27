@@ -29,7 +29,7 @@ jobs:
       uses: mr-smithers-excellent/docker-build-push@v4
       with:
         image: rohithgadu/taskdockerimage
-        tags: v1
+        tag: v1
         registry: docker.io
         dockerfile: Dockerfile
         username: ${{ secrets.DOCKER_USERNAME }}
