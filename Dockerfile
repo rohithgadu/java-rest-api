@@ -1,5 +1,5 @@
 FROM openjdk:19
-ADD build/libs/*.jar taskdockerimage.jar
 EXPOSE 8090
-RUN bash -c 'touch /taskdockerimage.jar'
-ENTRYPOINT ["java","-jar","taskdockerimage.jar"]
+ADD build/libs/*.jar /usr/app/
+WORKDIR /usr/app/
+ENTRYPOINT ["java","-jar","java-rest-api-0.0.1-SNAPSHOT.jar"]
