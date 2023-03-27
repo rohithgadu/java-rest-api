@@ -28,8 +28,8 @@ jobs:
     - name: Build and Push Docker Image
       uses: mr-smithers-excellent/docker-build-push@v4
       with:
-        image: rohithgadu/taskdockerimage
-        tag: v1
+        image: rohithgadu/task-cicd
+        tag: latest
         registry: docker.io
         dockerfile: Dockerfile
         username: ${{ secrets.DOCKER_USERNAME }}
